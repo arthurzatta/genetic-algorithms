@@ -14,7 +14,7 @@ class nRainhasInd(Individuo):
         son2 = p2.genes[:4]
         son2.append(self.genes[4:])
 
-        return [nRainhasInd(son1), nRainhasInd(son2)]
+        return [nRainhasInd(son1), nRainhasInd(son2)] 
 
     def mutar(self):
         pass
