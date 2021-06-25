@@ -3,27 +3,30 @@ from abc import ABC, abstractmethod
 class Individuo(ABC):
     
     def __init__(self):
-        self._avaliado = False
-        self._avaliacao = 0.0
+        self.avaliado = False
+        self.avaliacao = 0
+        super().__init__()
 
     #crossover
     @abstractmethod
-    def recombinar(self, individuo):
+    def crossover(self, individual):
         pass
     
     #mutations
     @abstractmethod
-    def mutar(self):
+    def mutate(self):
         pass
+
     
     #fitness
     @abstractmethod
-    def avaliar(self) -> float:
+    def evaluate(self):
         pass
 
-    def get_avaliacao(self):
-        if not self._avaliado:
-            self._avaliacao = self.avaliar()
-        return  self._avaliacao
+    def get_evaluate(self):
+        if not self.avaliado:
+            self.avaliacao = self.evaluate()
+            self.avaliado = True
+        return  self.avaliacao
 
     

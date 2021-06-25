@@ -1,77 +1,96 @@
-from individuo import Individuo
 import random
 import math
 
-class nRainhasInd(Individuo):
+class nRainhasInd:
     
-    def __init__(self, genes: list, n_rainhas=8):
+    def __init__(self, chromosome: list, n_rainhas=8):
         self.n_rainhas = n_rainhas
-        self.genes = genes
+        self.chromosome = chromosome
+        self.avaliacao = 0
+        self.avaliado = False
 
     #Horizontal collisions needs to be considered
-    def crossover(self, p2):
-        son1 = self.genes[:4]
-        son2 = p2.genes[:4]
-        
-        son1 = self.crossover_second_part(p2, son1)
-        son2 = self.crossover_second_part(self.genes, son2)
-
-        for i in range(8):
-            try:
-                check = son1.
-        
-
-        return [nRainhasInd(son1), nRainhasInd(son2)] 
-
-    def crossover_second_part(self, genes:list, son:list):
-        for i in genes[4:]:
+    def crossover_second_part(self, chromosome:list, son:list):
+        for i in chromosome[4:]:
             try:
                 check = son.index(i)
                 son.append(-1)
             except ValueError:
                 son.append(i)
-        return son
+    
+    def check(self, chromosome:list):
+        check = []
 
+        for i in range(len(chromosome)):
+            try:
+                chromosome.index(i)
+            except ValueError:
+                check.append(i)
 
+        while len(check) != 0: 
+            rand = random.randint(0,len(check)-1)
+            index = chromosome.index(-1)
+            checked_value = check.pop(rand)
+            chromosome.pop(index)
 
-    '''
-        Mutation rate based in a percent of 0 to 1
-        Compare each chromosome of an individual if it is less than mutation rate
-        the individual needs to mutate that chromosome.
-        If none of the chromosomes satisfy this condition, one of them needs to be randomly selected and changed.
-    '''
+            chromosome.insert(index, checked_value)
+
+    def crossover(self, individual):
+        son1 = self.chromosome[:4]
+        son2 = individual.chromosome[:4]
+        
+        self.crossover_second_part(individual.chromosome, son1)
+        self.crossover_second_part(self.chromosome, son2)
+        
+        self.check(son1)
+        self.check(son2)
+
+        #print('P1:{}\nP2:{}\nS1:{}\nS2:{}\n'.format(self.chromosome,individual.chromosome,son1,son2))
+
+        return [nRainhasInd(son1), nRainhasInd(son2)] 
+
     def mutate(self, mutation_rate=0.05):
-        mutation = self.genes.copy()
+        mutation = self.chromosome.copy()
         aux_mutation = False
-
-        for pos in range(len(self.genes)):
-            rand_value = random.random()
-            if rand_value >= mutation_rate:
-               mutation = self.swap(mutation, pos)
+        
+        for mutation_index in range(self.n_rainhas):
+            random_rate = random.random()
+            if random_rate >= mutation_rate:
+               mutation = self.__swap(mutation, mutation_index)
                aux_mutation = True
 
-        #In case of any chromosome has been changed by the mutation rate, one of them will be randomly choose 
         if not aux_mutation:
-            rand_pos = random.randint(0,8)
+            rand_pos = random.randint(0,self.n_rainhas-1)
             mutation = self.swap(mutation, rand_pos)
-        return mutation
+        #print('P:{}\nM:{}\n'.format(self.chromosome,mutation))
+        return nRainhasInd(mutation)
 
-    def swap(self,mutant, pos):
-        new_chromosome = mutant[pos] 
-        while new_chromosome == mutant[pos]:
-            new_chromosome = random.randint(0,8)
+    def __swap(self, mutant:list, mutation_index:int):
+        new_chromosome = mutant[mutation_index] 
+        
+        while new_chromosome  == mutant[mutation_index]:
+            new_chromosome = random.randint(0,self.n_rainhas-1)
+
         index = mutant.index(new_chromosome)
-        mutant.insert(index, mutant[pos])
-        mutant.insert(pos, new_chromosome)   
-
-        return new_chromosome
+        mutant[index] = mutant[mutation_index] 
+        mutant[mutation_index] = new_chromosome
+        
+        return mutant
 
     #The fitness is the evaluation of number collisions of each queen.
     def evaluate(self):
         weigth = 0
         for i in range(self.n_rainhas):
             for j in range(i+1,self.n_rainhas):
-                abs = math.fabs(j-i)
-                if(self.genes[i] == self.genes[j] or self.genes[i] == self.genes[j] - abs or self.genes[i] == self.genes[j] + abs):
+                absolute = abs(j-i)
+                if(self.chromosome[i] == self.chromosome[j] or self.chromosome[i] == self.chromosome[j] - absolute or self.chromosome[i] == self.chromosome[j] + absolute):
                     weigth += 1
         return weigth
+
+    def get_evaluate(self):
+        if not self.avaliado:
+            self.avaliacao = self.evaluate()
+            self.avaliado = True
+        return  self.avaliacao
+
+

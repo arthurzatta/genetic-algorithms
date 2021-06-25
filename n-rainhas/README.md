@@ -1,0 +1,6 @@
+- [ ] Acredito que as gerações poderem ser feitas sem repetições já ajuda, pois vai evitar os conflitos horizontais, sobrando analisar só o que gerar de confronto na diagonal.
+- [ ] Re-analisar a forma de se realizar as mutações.
+- [ ] Implementar a função de fitness, ela que vai servir de peso pros genes serem passados pra nova geração.
+- [ ] Falta a função de seleção, que provavelmente vai analisar o fitness de cada indivíduo.
+  - [ ] Implementação da roulete wheel selection (roleta viciada de acordo com o Douglas).
+- [ ] Entender a parte de elitismo. 
