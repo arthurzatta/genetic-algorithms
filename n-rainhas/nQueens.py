@@ -1,15 +1,14 @@
 import random
 import math
 
-class nRainhasInd:
+class nQueens:
     
     def __init__(self, chromosome: list, n_rainhas=8):
         self.n_rainhas = n_rainhas
         self.chromosome = chromosome
-        self.avaliacao = 0
-        self.avaliado = False
+        self.fitness = 0
+        self.evaluated = False
 
-    #Horizontal collisions needs to be considered
     def crossover_second_part(self, chromosome:list, son:list):
         for i in chromosome[4:]:
             try:
@@ -45,9 +44,7 @@ class nRainhasInd:
         self.check(son1)
         self.check(son2)
 
-        #print('P1:{}\nP2:{}\nS1:{}\nS2:{}\n'.format(self.chromosome,individual.chromosome,son1,son2))
-
-        return [nRainhasInd(son1), nRainhasInd(son2)] 
+        return [nQueens(son1), nQueens(son2)] 
 
     def mutate(self, mutation_rate=0.05):
         mutation = self.chromosome.copy()
@@ -62,8 +59,7 @@ class nRainhasInd:
         if not aux_mutation:
             rand_pos = random.randint(0,self.n_rainhas-1)
             mutation = self.swap(mutation, rand_pos)
-        #print('P:{}\nM:{}\n'.format(self.chromosome,mutation))
-        return nRainhasInd(mutation)
+        return nQueens(mutation)
 
     def __swap(self, mutant:list, mutation_index:int):
         new_chromosome = mutant[mutation_index] 
@@ -77,7 +73,6 @@ class nRainhasInd:
         
         return mutant
 
-    #The fitness is the evaluation of number collisions of each queen.
     def evaluate(self):
         weigth = 0
         for i in range(self.n_rainhas):
@@ -88,9 +83,9 @@ class nRainhasInd:
         return weigth
 
     def get_evaluate(self):
-        if not self.avaliado:
-            self.avaliacao = self.evaluate()
-            self.avaliado = True
-        return  self.avaliacao
+        if not self.evaluated:
+            self.fitness = self.evaluate()
+            self.evaluated = True
+        return  self.fitness
 
 

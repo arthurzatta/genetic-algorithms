@@ -1,4 +1,4 @@
-from nRainhasFactory import RainhasFactory as factory 
+from nQueens import nQueens 
 import random
 
 class Ag:
@@ -9,9 +9,9 @@ class Ag:
     def initial_population(self, nInd: int):
         for individuo in range(nInd):
             auxGene = random.sample(list(range(8)), k=8)
-            self.population.append(factory.rainhasFactory(auxGene))
+            self.population.append(nQueens(auxGene))
 
-    def executar(self,nGen:int,nInd:int,elitism:int,maximization:bool):
+    def execute(self,nGen:int,nInd:int,elitism:int,maximization:bool):
         self.maximization = maximization
         self.initial_population(nInd)
         for gen in range(nGen):
@@ -26,10 +26,8 @@ class Ag:
             self.selection(nInd-elitism)
             self.population.extend(elite)
 
-            self.population = random.sample(self.population,k=nInd)
             self.printer(gen)
-
-   #Maybe can be made better
+     
     def get_filhos(self):
         parents = self.population.copy()
         offsprings = []
@@ -49,7 +47,6 @@ class Ag:
             mutations.append(aux_mutation)
         return mutations
 
-    #Problems to select an random value with non-integer values
     def selection(self, nInd: int):
         selected_genes = []
         total = self.__evaluation_total() 
@@ -63,7 +60,6 @@ class Ag:
             value = self.__wheel_rotation(random_sorted)
             selected_genes.append(value)
 
-        #They will be the next population generation 
         self.population = selected_genes
 
     def __evaluation_total(self):
@@ -93,21 +89,11 @@ class Ag:
 
         return selected
 
-        #This function needs some corrections
     def elitism(self,elitism:int):
-        elite = []
 
-        for i in range(elitism):
-            pop_index = 0
-            best = self.population[0]
-            for index in range(len(self.population)-1):
-                if self.population[index].chromosome < best.chromosome:
-                    best = self.population[index]
-                    pop_index = index
-            self.population.pop(pop_index)
-            elite.append(best)
-        return elite
-           
+        aux = sorted(self.population,key=lambda individual: individual.chromosome)
+        return aux[:elitism]
+    
 
     def printer(self, gen:int):
         best = self.population[0]
@@ -116,4 +102,4 @@ class Ag:
                 best = chromosome
             elif self.maximization and chromosome.get_evaluate() >= best.get_evaluate():
                 best = chromosome
-        print('Geração: {} Individuo: {} Avaliacao: {}'.format(gen,best.chromosome,best.avaliacao))
+        print('Geração: {} Individuo: {} Avaliação: {}'.format(gen,best.chromosome,best.fitness))
