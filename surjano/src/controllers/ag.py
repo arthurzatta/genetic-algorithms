@@ -1,16 +1,17 @@
 import random
-from ..factory.rotated_factory import RotatedEllipsoideFactory
 class Ag:
     def __init__(self):
         self.population = []
         self.maximization = False
         self.factory = None
+        
     def initial_population(self, nInd: int, a:int, b:int):
-        self.population =  [[random.uniform(a,b) for d in range(dimension)] for i in range(nInd)]
+        genes = lambda a,b: random.uniform(a,b)
+        self.population = [self.factory([genes(a,b) for d in range(2)])  for i in range(nInd)]
 
-    def execute(self,nGen:int,nInd:int,elitism:int,maximization:bool, factory) -> None:
+    def execute(self,nGen:int,nInd:int,elitism:int,maximization:bool,interval: tuple, factory) -> None:
         self.factory = factory
-        self.initial_population(nInd)
+        self.initial_population(nInd, interval[0], interval[1])
         
         self.maximization = maximization
         
@@ -18,7 +19,7 @@ class Ag:
             aux_population = []
             
             aux_population.extend(self.population)
-            aux_population.extend(self.get_recombinations())
+            aux_population.extend(self.get_recombinations(factory))
             aux_population.extend(self.get_mutations())        
             
 
@@ -30,18 +31,18 @@ class Ag:
 
             self.printer(gen)
      
-    def get_recombinations(self) -> list:
+    def get_recombinations(self,factory) -> list:
         offsprings = []
 
         for i in range(0,int(len(self.population)/2),2):
-            parents = tuple(self.population[i],self.population[i+1])
-            sons = parents[0].crossover(parents[1])
-            offsprings.extend(sons)
-        offsprings = [self.factory.factory(i) for i in offsprings] 
+            parents = [self.population[i],self.population[i+1]]
+            sons = parents[0].crossover(parents[1].chromosome)
+            aux = [self.factory(i) for i in sons]
+            offsprings.extend(aux)
         return offsprings 
 
     def get_mutations(self) -> list:
-        return list(map(lambda individual: self.factory.factory(individual.mutate()), self.population))
+        return list(map(lambda individual: self.factory(individual.mutate()), self.population))
 
     def selection(self, nInd: int):
         selected_genes = []
@@ -92,10 +93,10 @@ class Ag:
     
 
     def printer(self, gen:int):
-        best = self.population[0]
-        for chromosome in self.population:
-            if not self.maximization and chromosome.get_evaluate() <= best.get_evaluate():
-                best = chromosome
-            elif self.maximization and chromosome.get_evaluate() >= best.get_evaluate():
-                best = chromosome
-        print('Geração: {} Individuo: {} Avaliação: {}'.format(gen,best.chromosome,best.fitness))
+        best = []
+
+        if not self.maximization:
+            best = sorted(self.population, key=lambda individual: individual.fitness)
+        else:
+            best = sorted(self.population, key=lambda individual: individual.chromosome, reverse=True)
+        print('Geração: {} \tIndividuo: {} \tAvaliação: {}'.format(gen,best[0].chromosome,best[0].fitness))

@@ -5,12 +5,12 @@ class Dixon(Surjano):
     def __init__(self, chromosome):
         super().__init__(chromosome)
 
-    def evaluate(self):
-        dimension = len(self.chromosome)
+    def evaluate(self) -> float:
+        dimension = len(self.chromosome)-1
         result = 0
 
-        xi = list(map(lambda i: 2 ** (-((2 ** i)-2)/(2 ** i)), self.chromosome))
+        xi = list(map(lambda i: 2 ** (-((2 ** i)-2)/(2 ** i)), [1,2]))
         
         for i in range(1, dimension):
             result += i * ((2 * (xi[i] ** 2) - xi[i-1]) ** 2)
-        self.fitness = (xi[0] - 1 ** 2) + result
+        return int((xi[0] - 1 ** 2) + result)

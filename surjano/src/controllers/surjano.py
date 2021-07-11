@@ -4,13 +4,13 @@ import math
 from abc import ABC, abstractmethod 
 
 class Surjano(ABC):
-    def __init__(self, chromosome):
+    def __init__(self, chromosome: list):
         self.chromosome = chromosome
         self.fitness = 0.0
         self.evaluated = False
 
     #Arithmetic crossover
-    def crossover(self, parent, alfa=0.33):
+    def crossover(self, parent: list, alfa=0.33):
         son1 = []
         son2 = []
         for i in range(len(self.chromosome)):
@@ -19,7 +19,7 @@ class Surjano(ABC):
         return [son1,son2]
 
     #Blx-alfa racombination
-    def blx_alfa(self,parent):
+    def blx_alfa(self,parent: list):
         son1 = []
         son2 = []
         for i in range(len(self.chromosome)):
@@ -43,8 +43,8 @@ class Surjano(ABC):
             else:
                 mutant.append(gene)
         if mutant == self.chromosome:
-            index = random.randint(0,len(self.chromosome))
-            alfa = random.gauss()
+            index = random.randint(0,len(self.chromosome)-1)
+            alfa = random.gauss(mu=0, sigma=0.1)
             mutant[index] += alfa
         return mutant
         
@@ -55,8 +55,6 @@ class Surjano(ABC):
 
     def get_evaluate(self):
         if not self.evaluated:
+            self.evaluated = True
             self.fitness = self.evaluate()
-            self.evaluate = True
-            return self.fitness
-        else:
-            self.fitness
+        return self.fitness
