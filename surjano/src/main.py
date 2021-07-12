@@ -14,6 +14,7 @@ ag.execute( nGen=GENERATIONS,
             elitism=ELITE,
             maximization=False,
             interval=(-65.536, 65.536),
+            dimension=2,
             factory=RotatedEllipsoidFactory.factory )
 
 print("DIXON-PRICE FUNCTION")
@@ -22,6 +23,7 @@ ag.execute( nGen=GENERATIONS,
             elitism=ELITE,
             maximization=False,
             interval=(-10, 10),
+            dimension=2,
             factory=DixonFactory.factory )
 
 

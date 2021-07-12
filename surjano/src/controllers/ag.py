@@ -5,13 +5,13 @@ class Ag:
         self.maximization = False
         self.factory = None
         
-    def initial_population(self, nInd: int, a:int, b:int):
+    def initial_population(self, nInd: int, a:int, b:int, dimension: int):
         genes = lambda a,b: random.uniform(a,b)
         self.population = [self.factory([genes(a,b) for d in range(2)])  for i in range(nInd)]
 
-    def execute(self,nGen:int,nInd:int,elitism:int,maximization:bool,interval: tuple, factory) -> None:
+    def execute(self,nGen:int,nInd:int,elitism:int,maximization:bool,interval: tuple, dimension:int ,factory) -> None:
         self.factory = factory
-        self.initial_population(nInd, interval[0], interval[1])
+        self.initial_population(nInd, interval[0], interval[1], dimension)
         
         self.maximization = maximization
         
@@ -48,13 +48,13 @@ class Ag:
         selected_genes = []
         total = self.__evaluation_total() 
 
+        aux = sorted(self.population, key=lambda i: i.fitness)
         for i in range(nInd):
             if self.maximization:
                 random_sorted = random.randint(0,total)
             else:
                 random_sorted = random.uniform(0,total) 
-
-            value = self.__wheel_rotation(random_sorted)
+            value = self.__wheel_rotation(random_sorted, aux)
             selected_genes.append(value)
 
         self.population = selected_genes
@@ -69,11 +69,11 @@ class Ag:
                 total += 1/(chromosome.get_evaluate()+1)
         return total
         
-    def __wheel_rotation(self,raffled):
+    def __wheel_rotation(self,raffled,aux):
         roulette_sum = 0
         selected = None
 
-        for chromosome in self.population:
+        for chromosome in aux:
 
             if self.maximization:
                 roulette_sum += chromosome.get_evaluate()
@@ -98,5 +98,5 @@ class Ag:
         if not self.maximization:
             best = sorted(self.population, key=lambda individual: individual.fitness)
         else:
-            best = sorted(self.population, key=lambda individual: individual.chromosome, reverse=True)
-        print('Geração: {} \tIndividuo: {} \tAvaliação: {}'.format(gen,best[0].chromosome,best[0].fitness))
+            best = sorted(self.population, key=lambda individual: individual.fitness, reverse=True)
+        print('Geração: \t{} Individuo: \t{} \tAvaliação: {}'.format(gen,best[0].chromosome,best[0].fitness))

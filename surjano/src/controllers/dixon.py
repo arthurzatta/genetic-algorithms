@@ -8,9 +8,9 @@ class Dixon(Surjano):
     def evaluate(self) -> float:
         dimension = len(self.chromosome)-1
         result = 0
-
-        xi = list(map(lambda i: 2 ** (-((2 ** i)-2)/(2 ** i)), [1,2]))
+        first_term = self.chromosome[0]
+        # xi = list(map(lambda i: 2 ** (-((2 ** i)-2)/(2 ** i)), [1,2]))
         
         for i in range(1, dimension):
-            result += i * ((2 * (xi[i] ** 2) - xi[i-1]) ** 2)
-        return int((xi[0] - 1 ** 2) + result)
+            result += i * ((2 * (self.chromosome[i] ** 2) - self.chromosome[i-1]) ** 2)
+        return (first_term - 1) ** 2 + result

@@ -1,7 +1,4 @@
-import sys 
-sys.path.append('..')
-
-from src.controllers.rotated_ellipsoid import RotatedEllipsoid
+from controllers.rotated_ellipsoid import RotatedEllipsoid
     
 class RotatedEllipsoidFactory:
     @staticmethod
