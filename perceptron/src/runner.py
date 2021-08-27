@@ -31,7 +31,7 @@ class Runner:
                 errors = np.append(errors, error)
 
             total_error = self.age_total_error(errors)
-            # self.printer(age=age, error=total_error)   
+            self.printer(age=age, error=total_error)   
 
     def runner_sample(self, dataset_row: ndarray) -> ndarray:
 
@@ -42,7 +42,7 @@ class Runner:
         errors = []
 
         for i in range(expected_results.size):
-            print(self.__weights[i])
+            # print(self.__weights[i])
             #Somatorio
             summation = self.perceptron.summation(dataset_row[:idx], self.__weights[i])
 
@@ -57,12 +57,11 @@ class Runner:
                 self.__weights[i][j] = self.perceptron.new_weigth(
                     expected_value=expected_results[i],
                     sigm=sigm,
-                    xi=dataset_row[i],
+                    xi=dataset_row[j],
                     weigth=self.__weights[i][j]
                 )
-        errors = np.asarray(errors)
-        error = self.age_total_error(errors)
-        return error
+ 
+        return np.asarray(errors)
 
     def age_total_error(self, error: ndarray):
         result = 0.0
