@@ -23,8 +23,7 @@ class Runner:
 
             errors = np.asarray([])
 
-            for j in range(length):
-                #Cada amostra recebe x0 = 1 ou x[0] = 1
+            for j in range(len(self.dataset)):
                 sample_array = np.append([1], self.dataset[j])
                 error = self.runner_sample(sample_array)
                 errors = np.append(errors, [error])
