@@ -19,3 +19,4 @@
 
 - An abstract class called RNA with the main mathods of mlp
 - An MLP class to implement executer and trainer
+- Number of hiden layers depends of the function used, in normal cases a continuos function uses one layer, but with discontinuous two or more can be used, normaly two.
