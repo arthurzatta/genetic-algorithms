@@ -1,57 +1,117 @@
 import numpy as np
+from numpy import ndarray
+from math import exp
 from interfaces.rna import RNA
 
 
 class MLP(RNA):
-    def __init__(self, qtd_in: int, qtd_h: int, qtd_out: int, dataset: np.ndarray):
-      self.qtd_in = qtd_in
-      self.qtd_out = qtd_out
-      self.qtd_h = qtd_h
-      self.dataset = dataset
+    def __init__(self, qtd_in: int, qtd_h: int, qtd_out: int, dataset: ndarray, ages: int, min_value: float, max_value: float):
+        self.qtd_in = qtd_in
+        self.qtd_out = qtd_out
+        self.qtd_h = qtd_h
+        self.dataset = dataset
+        self.ages = ages
+        self.min = min_value
+        self.max = max_value
+        self.output_layer = self.weigths_matrix(self.qtd_h+1, self.qtd_out)
+        self.hiden_layer = self.weigths_matrix(self.qtd_in+1, self.qtd_h)
 
-    def aproximation_error(self, expected_output: float, sigmoid: float):
-      return abs(expected_output - sigmoid)
+    def aproximation_error(self, expected_output: ndarray, sigmoid: ndarray):
+        result = 0
+        for i in range(expected_output.size):
+            result += abs(expected_output[i] - sigmoid[i])
+        return result
 
-    # def sigmoid(self,)
+    def sigmoid(self, value: float):
+        return 1/(1 + exp(-value))
 
-    def hiden_layer(self):
-      weigths_matrix = np.random.uniform(low=-0.3, high=0.3,size=(self.qtd_in+1,self.qtd_h)) 
-      for column in range(self.qtd_h):
-        weigths_matrix[self.qtd_in][column] = 1 
-      return weigths_matrix
+    def delta_sigmoid(self, theta_array: ndarray, expected_output: ndarray) -> ndarray:
+        delta_theta = np.copy(theta_array)
+        for i in range(theta_array.size):
+            theta = theta_array[i]
+            delta_theta[i] = theta * (1-theta) * (expected_output[i] - theta)
+        return delta_theta
 
-    def output_layer(self):
-      weigths_matrix = np.random.uniform(low=-0.3, high=0.3,size=(self.qtd_h+1,self.qtd_out)) 
-      for column in range(self.qtd_out):
-        weigths_matrix[self.qtd_h][column] = 1 
-      return weigths_matrix
+    def delta_h(self, hiden_array: ndarray, w_theta: ndarray, delta_theta: ndarray):
+        delta_h = np.copy(hiden_array)
+        for h in range(hiden_array.size):
+            summation = 0
+            for j in range(delta_theta.size):
+                summation += delta_theta[j] * w_theta[h][j]
+            delta_h[j] = hiden_array[h] * (1-hiden_array[h]) * summation
+        return delta_h
 
+    def weigths_matrix(self, rows: int, columns: int):
+        weigths_matrix = np.random.uniform(
+            low=self.min, high=self.max, size=(rows, columns))
+        return weigths_matrix
 
+    def theta_weigth_adjustment(self, w_theta: ndarray, ni: float, delta_theta: ndarray, hiden_array: ndarray):
+        for h in range(len(w_theta)):
+            for j in range(delta_theta.size):
+                w_theta[h][j] += ni * delta_theta[j] * hiden_array[h]
+        return w_theta
 
-    def treinar(self, x_in: np.ndarray, y: np.ndarray):
-      hiden_layer = self.hiden_layer()
-      print(hiden_layer)
+    def hiden_weigth_adjustment(self, w_hiden: ndarray, delta_hiden: ndarray, ni: float, x_in: ndarray):
+        for i in range(x_in.size):
+            for h in range(delta_hiden.size-1):
+                w_hiden[i][h] += ni * delta_hiden[h] * x_in[i]
+        return w_hiden
 
-      #entries array
-      #x_in = [x0 x1 bias]
-      x_in = np.append(x_in, 1)
-      
-      #array of results from w*x
-      #H = [(w00*x0+w10*x1) (w01*x0+w11*x1) bias]
-      H = np.ones(self.qtd_h+1)
+    def age_total_error(self, error: ndarray):
+        result = 0.0
+        for i in range(error.size):
+            result += error[i]
+        return result
 
-      for j in range(self.qtd_h):
-        aux = 0
-        for i in range(self.qtd_in):
-          aux += x_in[i] * hiden_layer[i][j]
-        H[j] = aux
+    def printer(self, age: int, error: float):
+        print('{} - {}'.format(age, error))
 
-      print(H)        
+    def treinar(self, x_in: ndarray, y: ndarray):
+        # hiden_layer = self.weigths_matrix(self.qtd_in+1,self.qtd_h)
+        x_in = np.append(x_in, 1)
 
+        # summation of the weigths from the hiden layer times the inputs
+        H = np.ones(self.qtd_h+1)
+        for j in range(self.qtd_h):
+            sum_result = 0
+            for i in range(self.qtd_in+1):
+                sum_result += x_in[i] * self.hiden_layer[i][j]
+            H[j] = self.sigmoid(sum_result)
+
+        # output_layer = self.weigths_matrix(self.qtd_h+1,self.qtd_out)
+        output = np.zeros(self.qtd_out)
+        for j in range(self.qtd_out):
+            sum_result = 0
+            for i in range(H.size):
+                sum_result += H[i] * self.output_layer[i][j]
+            output[j] = self.sigmoid(sum_result)
+
+        error = self.aproximation_error(y, output)
+
+        delta_theta = self.delta_sigmoid(output, y)
+        delta_h = self.delta_h(H, self.hiden_layer, delta_theta)
+
+        self.hiden_layer = self.hiden_weigth_adjustment(
+            self.hiden_layer, delta_h, 0.3, x_in)
+        self.output_layer = self.theta_weigth_adjustment(
+            self.output_layer, 0.3, delta_theta, H)
+
+        return error
 
     def executar(self):
 
-      x_in = self.dataset[0][:self.qtd_in]
-      y = self.dataset[0][self.qtd_in:]
-      
-      self.treinar(x_in, y)
+        for age in range(self.ages):
+
+            errors = np.asarray([])
+
+            for j in range(len(self.dataset)):
+
+                x_in = self.dataset[j][:self.qtd_in]
+                y = self.dataset[j][self.qtd_in:]
+
+                error = self.treinar(x_in, y)
+                errors = np.append(errors, [error])
+
+            total_error = self.age_total_error(errors)
+            self.printer(age=age, error=total_error)
