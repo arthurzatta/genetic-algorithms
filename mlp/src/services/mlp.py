@@ -5,6 +5,7 @@ from interfaces.rna import RNA
 
 
 class MLP(RNA):
+
     def __init__(self, qtd_in: int, qtd_h: int, qtd_out: int, dataset: ndarray, ages: int, min_value: float, max_value: float):
         self.qtd_in = qtd_in
         self.qtd_out = qtd_out
@@ -13,8 +14,8 @@ class MLP(RNA):
         self.ages = ages
         self.min = min_value
         self.max = max_value
-        self.output_layer = self.weigths_matrix(self.qtd_h+1, self.qtd_out)
-        self.hiden_layer = self.weigths_matrix(self.qtd_in+1, self.qtd_h)
+        self.weigth_hiden = self.weigth_matrix(self.qtd_in+1, self.qtd_h)
+        self.weigth_theta = self.weigth_matrix(self.qtd_h+1, self.qtd_out)
 
     def aproximation_error(self, expected_output: ndarray, sigmoid: ndarray):
         result = 0
@@ -25,7 +26,7 @@ class MLP(RNA):
     def sigmoid(self, value: float):
         return 1/(1 + exp(-value))
 
-    def delta_sigmoid(self, theta_array: ndarray, expected_output: ndarray) -> ndarray:
+    def delta_theta(self, theta_array: ndarray, expected_output: ndarray) -> ndarray:
         delta_theta = np.copy(theta_array)
         for i in range(theta_array.size):
             theta = theta_array[i]
@@ -41,22 +42,20 @@ class MLP(RNA):
             delta_h[j] = hiden_array[h] * (1-hiden_array[h]) * summation
         return delta_h
 
-    def weigths_matrix(self, rows: int, columns: int):
-        weigths_matrix = np.random.uniform(
+    def weigth_matrix(self, rows: int, columns: int):
+        weigth_matrix = np.random.uniform(
             low=self.min, high=self.max, size=(rows, columns))
-        return weigths_matrix
+        return weigth_matrix
 
-    def theta_weigth_adjustment(self, w_theta: ndarray, ni: float, delta_theta: ndarray, hiden_array: ndarray):
-        for h in range(len(w_theta)):
-            for j in range(delta_theta.size):
-                w_theta[h][j] += ni * delta_theta[j] * hiden_array[h]
-        return w_theta
+    def theta_weigth_adjustment(self, ni: float, delta_theta: ndarray, hiden_array: ndarray):
+        for h in range(len(self.weigth_theta)):
+            for j in range(len(self.weigth_theta[0])):
+                self.weigth_theta[h][j] += ni * delta_theta[j] * hiden_array[h]
 
-    def hiden_weigth_adjustment(self, w_hiden: ndarray, delta_hiden: ndarray, ni: float, x_in: ndarray):
-        for i in range(x_in.size):
+    def hiden_weigth_adjustment(self, delta_hiden: ndarray, ni: float, x_in: ndarray):
+        for i in range(len(delta_hiden)):
             for h in range(delta_hiden.size-1):
-                w_hiden[i][h] += ni * delta_hiden[h] * x_in[i]
-        return w_hiden
+                self.weigth_hiden[i][h] += ni * delta_hiden[h] * x_in[i]
 
     def age_total_error(self, error: ndarray):
         result = 0.0
@@ -67,35 +66,33 @@ class MLP(RNA):
     def printer(self, age: int, error: float):
         print('{} - {}'.format(age, error))
 
-    def treinar(self, x_in: ndarray, y: ndarray):
-        # hiden_layer = self.weigths_matrix(self.qtd_in+1,self.qtd_h)
-        x_in = np.append(x_in, 1)
+    def treinar(self, x_in: ndarray, y: ndarray) -> float:
+        x = np.append(x_in, 1)
 
         # summation of the weigths from the hiden layer times the inputs
-        H = np.ones(self.qtd_h+1)
-        for j in range(self.qtd_h):
+        H = np.zeros(self.qtd_h+1)
+        for h in range(H.size-1):
             sum_result = 0
-            for i in range(self.qtd_in+1):
-                sum_result += x_in[i] * self.hiden_layer[i][j]
-            H[j] = self.sigmoid(sum_result)
+            for i in range(x.size):
+                sum_result += x[i] * self.weigth_hiden[i][h]
+            H[h] = self.sigmoid(sum_result)
+        H[H.size-1] = 1
 
-        # output_layer = self.weigths_matrix(self.qtd_h+1,self.qtd_out)
         output = np.zeros(self.qtd_out)
-        for j in range(self.qtd_out):
+
+        for j in range(output.size):
             sum_result = 0
-            for i in range(H.size):
-                sum_result += H[i] * self.output_layer[i][j]
+            for h in range(H.size):
+                sum_result += H[h] * self.weigth_theta[h][j]
             output[j] = self.sigmoid(sum_result)
 
         error = self.aproximation_error(y, output)
 
-        delta_theta = self.delta_sigmoid(output, y)
-        delta_h = self.delta_h(H, self.hiden_layer, delta_theta)
-
-        self.hiden_layer = self.hiden_weigth_adjustment(
-            self.hiden_layer, delta_h, 0.3, x_in)
-        self.output_layer = self.theta_weigth_adjustment(
-            self.output_layer, 0.3, delta_theta, H)
+        delta_theta = self.delta_theta(output, y)
+        delta_h = self.delta_h(H, self.weigth_hiden, delta_theta)
+        self.theta_weigth_adjustment(
+            ni=0.3, delta_theta=delta_theta, hiden_array=H)
+        self.hiden_weigth_adjustment(delta_hiden=delta_h, ni=0.3, x_in=x)
 
         return error
 
