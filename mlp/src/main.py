@@ -20,4 +20,4 @@ MLP(qtd_in=4, qtd_out=3, qtd_h=4, dataset=selection('BALANCE'), ages=AGES, min_v
 print("WDBC")
 MLP(qtd_in=30, qtd_out=2, qtd_h=16, dataset=selection('WDBC'), ages=AGES, min_value=MIN, max_value=MAX, ni=0.5).runner()
 print("WPBC")
-MLP(qtd_in=32, qtd_out=2, qtd_h=16, dataset=selection('WPBC'), ages=AGES, min_value=MIN, max_value=MAX, ni=0.3).runner()
+MLP(qtd_in=32, qtd_out=2, qtd_h=16, dataset=selection('WPBC'), ages=AGES, min_value=MIN, max_value=MAX, ni=0.5).runner()

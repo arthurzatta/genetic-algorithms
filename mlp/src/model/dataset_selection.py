@@ -2,6 +2,8 @@ import random
 from math import floor,ceil
 import numpy as np
 
+def base_model():
+  return { "training": [], "test": [] }
 def balance_dataset(): 
 
   balance = {
@@ -10,16 +12,31 @@ def balance_dataset():
     "L": [1,0,0]
   }
 
-  data = []
+  balance_separation = {
+    "B": [],
+    "R": [],
+    "L": []
+  }
 
   with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/balance-scale.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
-      outputs = balance[dataset_line[0]]
+      result = dataset_line[0]
+      outputs = balance[result]
       x_in = list(map(int, dataset_line[1:]))
       x_in.extend(outputs)
-      data.append(x_in)
-  return data
+      balance_separation[result].append(x_in)
+
+  bases = base_model()
+
+  for key in balance_separation:
+    # print("Key: {} Length: {} ".format(key, len(balance_separation[key])))
+    # input()
+    splited_bases = class_separation(balance_separation[key])
+    bases['training'].extend(splited_bases['training'])
+    bases['test'].extend( splited_bases['test'])
+  
+  return bases
 
 def wdbc_dataset(): 
 
@@ -27,17 +44,30 @@ def wdbc_dataset():
     "M": [1, 0],
     "B": [0, 1]
   }
-
-  data = []
+  diagnosis_separation = {
+    "M": [],
+    "B": []
+  }
 
   with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/wdbc.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
-      outputs = diagnosis[dataset_line[1]]
+      result = dataset_line[1]
+      outputs = diagnosis[result]
       x_in = list(map(float, dataset_line[2:]))
       x_in.extend(outputs)
-      data.append(x_in)
-  return data
+      diagnosis_separation[result].append(x_in)
+  
+  bases = base_model()
+
+  for key in diagnosis_separation:
+    # print("Key: {} Length: {} ".format(key, len(diagnosis_separation[key])))
+    # input()
+    splited_bases = class_separation(diagnosis_separation[key])
+    bases['training'].extend(splited_bases['training'])
+    bases['test'].extend( splited_bases['test'])  
+  return bases
+
 
 def wpbc_dataset(): 
 
@@ -46,44 +76,66 @@ def wpbc_dataset():
     "N": [0, 1]
   }
 
-  data = []
+  recurrence_separation = {
+    "R": [],
+    "N": []
+  }
 
   with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/wpbc.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
-      outputs = recurrence[dataset_line[1]]
+      result = dataset_line[1]
+      outputs = recurrence[result]
       x_in = list(map(float, dataset_line[3:]))
       x_in.extend(outputs)
-      data.append(x_in)
-  return data
+      recurrence_separation[result].append(x_in)
 
+  bases = base_model()
 
-def selection(dataset_name):
+  for key in recurrence_separation:
+    # print("Key: {} Length: {} ".format(key, len(recurrence_separation[key])))
+    # input()
+    splited_bases = class_separation(recurrence_separation[key])
+    bases['training'].extend(splited_bases['training'])
+    bases['test'].extend( splited_bases['test'])  
+  return bases
 
-  datasets = {
-    "WPBC": wpbc_dataset(),
-    "WDBC": wdbc_dataset(),
-    "BALANCE": balance_dataset(),
-  }
-
+def class_separation(class_array):
   bases = {
     "training": [],
     "test": [],    
   }
 
-  dataset = datasets[dataset_name]
-  dataset_length = len(dataset)-1
+  dataset_length = len(class_array)-1
   
   training_percent = ceil(dataset_length * 0.75)
  
   for i in range(training_percent):
     rand_index = random.randint(0, dataset_length)
-    element = dataset.pop(rand_index)
+    element = class_array.pop(rand_index)
     bases['training'].append(element)
     dataset_length -= 1
   
-  bases['test'] = np.asarray(dataset)
+  bases['test'] = np.asarray(class_array) 
   bases['training'] = np.asarray(bases['training'])
 
   return bases
+
+def selection(dataset_name):
+
+  datasets = {
+    "WPBC": wpbc_dataset,
+    "WDBC": wdbc_dataset,
+    "BALANCE": balance_dataset,
+  }
+
+  function = datasets[dataset_name] 
+  training_bases = function()
+  rng = np.random.default_rng()
+  rng.shuffle(training_bases['training'])
+  rng.shuffle(training_bases['test'])
   
+  return training_bases
+
+if __name__ == '__main__':
+  print(selection('BALANCE')['training'])

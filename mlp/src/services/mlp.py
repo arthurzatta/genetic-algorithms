@@ -120,7 +120,7 @@ class MLP(RNA):
             test_error_epoch_class = 0
 
             for j in range(len(self.dataset)):
-
+            
                 x_in = np.append(self.dataset['training'][j][:self.qtd_in], 1)
                 y = self.dataset['training'][j][self.qtd_in:]
 
