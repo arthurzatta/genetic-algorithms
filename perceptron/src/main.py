@@ -10,7 +10,7 @@ perceptron = Perceptron()
 
 print('Tabela AND')
 and_result = Runner(dataset=and_table,ages=AGES,min_value=MIN_INTERVAL,max_value=MAX_INTERVAL, perceptron=perceptron).executer()
-
+input()
 print('Tabela OR')
 or_result = Runner(dataset=or_table,ages=AGES,min_value=MIN_INTERVAL,max_value=MAX_INTERVAL, perceptron=perceptron).executer()
 

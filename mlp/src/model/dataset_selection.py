@@ -1,6 +1,9 @@
 import random
 from math import floor,ceil
 import numpy as np
+import os
+
+WORK_DIR = os.getcwd() + "/model"
 
 def base_model():
   return { "training": [], "test": [] }
@@ -18,7 +21,7 @@ def balance_dataset():
     "L": []
   }
 
-  with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/balance-scale.data") as file:
+  with open(WORK_DIR + "/balance-scale.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
       result = dataset_line[0]
@@ -29,9 +32,7 @@ def balance_dataset():
 
   bases = base_model()
 
-  for key in balance_separation:
-    # print("Key: {} Length: {} ".format(key, len(balance_separation[key])))
-    # input()
+  for key in balance_separation:  
     splited_bases = class_separation(balance_separation[key])
     bases['training'].extend(splited_bases['training'])
     bases['test'].extend( splited_bases['test'])
@@ -49,7 +50,7 @@ def wdbc_dataset():
     "B": []
   }
 
-  with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/wdbc.data") as file:
+  with open(WORK_DIR + "/wdbc.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
       result = dataset_line[1]
@@ -61,8 +62,6 @@ def wdbc_dataset():
   bases = base_model()
 
   for key in diagnosis_separation:
-    # print("Key: {} Length: {} ".format(key, len(diagnosis_separation[key])))
-    # input()
     splited_bases = class_separation(diagnosis_separation[key])
     bases['training'].extend(splited_bases['training'])
     bases['test'].extend( splited_bases['test'])  
@@ -81,7 +80,7 @@ def wpbc_dataset():
     "N": []
   }
 
-  with open("/home/arthur/Desktop/Faculdade/IC/genetic-algorithms/mlp/src/model/wpbc.data") as file:
+  with open(WORK_DIR + "/wpbc.data") as file:
     for line in file:
       dataset_line = line.splitlines()[0].split(',')
       result = dataset_line[1]
@@ -93,8 +92,6 @@ def wpbc_dataset():
   bases = base_model()
 
   for key in recurrence_separation:
-    # print("Key: {} Length: {} ".format(key, len(recurrence_separation[key])))
-    # input()
     splited_bases = class_separation(recurrence_separation[key])
     bases['training'].extend(splited_bases['training'])
     bases['test'].extend( splited_bases['test'])  

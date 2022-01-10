@@ -6,7 +6,7 @@ from interfaces.rna import RNA
 
 class MLP(RNA):
 
-    def __init__(self, qtd_in: int, qtd_h: int, qtd_out: int, dataset: dict, ages: int, min_value: float, max_value: float, ni: float):
+    def __init__(self, qtd_in: int, qtd_h: int, qtd_out: int, dataset: dict, ages: int, min_value: float, max_value: float, ni: float, quadratic_error = False):
         self.qtd_in = qtd_in
         self.qtd_out = qtd_out
         self.qtd_h = qtd_h
@@ -17,6 +17,7 @@ class MLP(RNA):
         self.weigth_hidden = self.weigth_matrix(self.qtd_in+1, self.qtd_h)
         self.weigth_theta = self.weigth_matrix(self.qtd_h+1, self.qtd_out)
         self.ni = ni
+        self.quadratic_error = quadratic_error
 
     def aproximation_error(self, expected_output: ndarray, sigmoid: ndarray):
         result = 0
@@ -32,12 +33,21 @@ class MLP(RNA):
 
         aprox_error = self.aproximation_error(expected_output, threshold_array)
 
-        if aprox_error > 0: 
-            return 1
-        return 0
+        #valor desejado
+        # if aprox_error > 0: 
+        #     return 1
+        # return 0
+        
+        #valor desejado deslocado
+        if aprox_error > 0.05: 
+            return 0.95
+        return 0.05
         
     def sigmoid(self, value: float):
         return 1/(1 + np.exp(-value))
+
+    def normalization(self, x_in: float, x_min: float, x_max:float):
+        return (x_in - x_min)/(x_max - x_min)
     
     def threshold(self, theta: float):
         if theta >= 0.5: 
@@ -48,7 +58,14 @@ class MLP(RNA):
         delta_theta = np.copy(theta_array)
         for i in range(theta_array.size):
             theta = theta_array[i]
-            delta_theta[i] = theta * (1-theta) * (expected_output[i] - theta)
+            if (self.quadratic_error):
+                signal = 1
+                if(expected_output[i] - theta < 0):
+                    signal = -1
+                delta_theta[i] = theta * (1-theta) * ((expected_output[i] - theta) ** 2) * signal
+            else: 
+                delta_theta[i] = theta * (1-theta) * (expected_output[i] - theta)
+            
         return delta_theta
 
     def delta_h(self, hidden_array: ndarray, w_theta: ndarray, delta_theta: ndarray):
@@ -135,7 +152,12 @@ class MLP(RNA):
                 y2 = self.dataset['test'][j][self.qtd_in:]
 
                 output = self.executar(x2_in)['output_layer']
-                test_error_sample_aprox = self.aproximation_error(y2, output)
+
+                if(self.quadratic_error):
+                    test_error_sample_aprox = self.aproximation_error(y2, output) ** 2
+                else:
+                    test_error_sample_aprox = self.aproximation_error(y2, output)
+
                 test_error_sample_class = self.classification_error(y2, output)
 
                 test_error_epoch_aprox += test_error_sample_aprox
